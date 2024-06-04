@@ -19,6 +19,7 @@ The Flask backend uses SQLAlchemy for database interactions and connects to a Po
     - [Database (PostgreSQL)](#database-postgresql)
 6. [Docker Compose Configuration](#docker-compose-configuration)
 7. [Volume Configuration](#volume-configuration)
+8. [Screenshot of Application](#screenshot-of-application)
 
 ## Project Structure
 ```java
@@ -172,3 +173,6 @@ volumes:
 ## Volume Configuration
 ### Docker Volumes
 pgdata: Used to persist PostgreSQL data across container restarts.
+
+## Screenshot of Application
+![Screenshot of Application](./screenshot.png)
