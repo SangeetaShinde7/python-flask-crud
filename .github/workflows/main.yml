@@ -1,0 +1,44 @@
+name: Deploy to AWS EC2
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      - name: Login to Docker Hub
+        run: echo "${{ secrets.DOCKERHUB_PASSWORD }}" | docker login -u "${{ secrets.DOCKERHUB_USERNAME }}" --password-stdin
+
+      - name: Build and Push Next.js Image
+        run: |
+          docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/nextapp:latest ./frontend -f frontend/next.dockerfile
+          docker push ${{ secrets.DOCKERHUB_USERNAME }}/nextapp:latest
+
+      - name: Build and Push Flask Image
+        run: |
+          docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/flaskapp:latest ./backend -f backend/flask.dockerfile
+          docker push ${{ secrets.DOCKERHUB_USERNAME }}/flaskapp:latest
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Deploy to AWS EC2
+        uses: appleboy/ssh-action@v0.1.10
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            docker pull ${{ secrets.DOCKERHUB_USERNAME }}/nextapp:latest
+            docker pull ${{ secrets.DOCKERHUB_USERNAME }}/flaskapp:latest
+            docker-compose down
+            docker-compose up -d
